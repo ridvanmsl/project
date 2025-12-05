@@ -1,0 +1,64 @@
+# ML Models (too large for GitHub)
+amazon_model/
+coursera_model/
+hotel_model/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.Python
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Database
+*.db
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Flutter
+business_review_app/build/
+business_review_app/.dart_tool/
+business_review_app/.flutter-plugins
+business_review_app/.flutter-plugins-dependencies
+business_review_app/.packages
+business_review_app/pubspec.lock
+
+# Android
+business_review_app/android/local.properties
+business_review_app/android/.gradle/
+business_review_app/android/captures/
+business_review_app/android/gradlew
+business_review_app/android/gradlew.bat
+business_review_app/android/gradle/wrapper/gradle-wrapper.jar
+
+# Logs
+*.log
+
+# Ngrok
+ngrok.exe
+ngrok.yml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+

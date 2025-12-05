@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Review Analysis System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Business Review Analysis System</h1>
+            <p>Submit reviews for AI-powered analysis</p>
+        </header>
+
+        <div class="business-selector">
+            <button class="business-btn active" data-business="amazon_business" data-model="amazon">
+                <div class="btn-icon">🍽️</div>
+                <div class="btn-text">Food Restaurant</div>
+                <div class="model-info">amazon_model</div>
+            </button>
+            <button class="business-btn" data-business="coursera_business" data-model="coursera">
+                <div class="btn-icon">📚</div>
+                <div class="btn-text">Online Course</div>
+                <div class="model-info">coursera_model</div>
+            </button>
+            <button class="business-btn" data-business="hotel_business" data-model="hotel">
+                <div class="btn-icon">🏨</div>
+                <div class="btn-text">Hotel</div>
+                <div class="model-info">hotel_model</div>
+            </button>
+        </div>
+
+        <div class="review-form-container">
+            <h2>Submit Review</h2>
+            <form id="reviewForm">
+                <div class="form-group">
+                    <label for="customerName">Customer Name (Optional)</label>
+                    <input type="text" id="customerName" placeholder="John Doe">
+                </div>
+
+                <div class="form-group">
+                    <label for="rating">Rating (Optional)</label>
+                    <select id="rating">
+                        <option value="">Select rating</option>
+                        <option value="1">⭐ 1 - Poor</option>
+                        <option value="2">⭐⭐ 2 - Fair</option>
+                        <option value="3">⭐⭐⭐ 3 - Good</option>
+                        <option value="4">⭐⭐⭐⭐ 4 - Very Good</option>
+                        <option value="5">⭐⭐⭐⭐⭐ 5 - Excellent</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="reviewText">Review Text *</label>
+                    <textarea id="reviewText" rows="6" required 
+                        placeholder="Enter your review here... The AI will analyze the sentiment and extract key aspects."></textarea>
+                    <div class="char-count">
+                        <span id="charCount">0</span> characters
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    <span class="btn-text">Analyze Review</span>
+                    <span class="btn-loading" style="display: none;">
+                        <span class="spinner"></span> Processing...
+                    </span>
+                </button>
+            </form>
+        </div>
+
+        <div id="resultSection" class="result-section" style="display: none;">
+            <h2>Analysis Result</h2>
+            <div id="resultContent"></div>
+        </div>
+
+        <div class="recent-reviews-container">
+            <div class="section-header">
+                <h2>Recent Reviews</h2>
+                <button id="refreshBtn" class="refresh-btn">↻ Refresh</button>
+            </div>
+            <div id="reviewsList">
+                <div class="loading">Loading reviews...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
