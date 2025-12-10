@@ -1,13 +1,14 @@
 """
 FastAPI backend for business review analysis system
-Optimized version with WebSocket support, async processing, and SQLite
+Optimized version with WebSocket support, async processing, and PostgreSQL
 """
 from fastapi import FastAPI, HTTPException, BackgroundTasks, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional, Set
 from contextlib import asynccontextmanager
-import sqlite3
+import psycopg2
+from psycopg2.extras import RealDictCursor
 import datetime
 from datetime import timedelta
 import threading
@@ -16,9 +17,9 @@ import asyncio
 import uuid
 import json
 from ml_engine import load_all_models, get_engine
+from db_config import get_db_connection, get_direct_connection, create_database_if_not_exists
 
-# Database configuration
-DB_NAME = "reviews.db"
+# Database configuration handled by db_config.py
 
 
 @asynccontextmanager
@@ -127,116 +128,130 @@ manager = ConnectionManager()
 
 
 def init_db():
-    """Initialize SQLite database with required tables"""
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    
-    # Businesses table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS businesses (
-            id VARCHAR PRIMARY KEY,
-            name VARCHAR NOT NULL,
-            type VARCHAR,
-            description TEXT,
-            image_url VARCHAR,
-            created_at DATETIME
-        )
-    ''')
-    
-    # Users table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            email VARCHAR NOT NULL UNIQUE,
-            password VARCHAR NOT NULL,
-            business_id VARCHAR NOT NULL,
-            created_at DATETIME,
-            FOREIGN KEY (business_id) REFERENCES businesses(id)
-        )
-    ''')
-    
-    # Reviews table (one row per review with overall sentiment)
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS reviews (
-            id VARCHAR PRIMARY KEY,
-            business_id VARCHAR NOT NULL,
-            text TEXT NOT NULL,
-            customer_name VARCHAR,
-            rating FLOAT,
-            date DATETIME,
-            overall_sentiment VARCHAR
-        )
-    ''')
-    
-    # Aspect sentiments table (many aspects per review)
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS aspect_sentiments (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            review_id VARCHAR NOT NULL,
-            aspect_term VARCHAR,
-            category VARCHAR,
-            sentiment VARCHAR,
-            FOREIGN KEY (review_id) REFERENCES reviews(id)
-        )
-    ''')
-    
-    # Raw reviews table (queue for processing)
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS raw_reviews (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            business_id TEXT NOT NULL,
-            review_text TEXT NOT NULL,
-            customer_name TEXT,
-            rating REAL,
-            date TEXT,
-            status TEXT DEFAULT 'pending',
-            model_type TEXT,
-            created_at TEXT
-        )
-    ''')
-    
-    # Analytics table (cached analytics data)
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS analytics (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            business_id TEXT NOT NULL,
-            analytics_data TEXT,
-            generated_at TEXT,
-            period TEXT DEFAULT 'weekly'
-        )
-    ''')
-    
-    # Insert demo businesses if not exist
-    cursor.execute("SELECT COUNT(*) FROM businesses")
-    if cursor.fetchone()[0] == 0:
-        demo_businesses = [
-            ('amazon_business', 'Food Restaurant', 'food', 'Local food restaurant with great reviews', '', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
-            ('hotel_business', 'Luxury Hotel', 'hotel', 'Premium hotel with excellent service', '', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
-            ('coursera_business', 'Online Course Platform', 'education', 'Top-rated online education platform', '', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-        ]
-        cursor.executemany(
-            "INSERT INTO businesses (id, name, type, description, image_url, created_at) VALUES (?, ?, ?, ?, ?, ?)",
-            demo_businesses
-        )
-        print("[OK] Demo businesses created")
-    
-    # Insert demo users if not exist
-    cursor.execute("SELECT COUNT(*) FROM users")
-    if cursor.fetchone()[0] == 0:
-        demo_users = [
-            ('food@demo.com', 'password123', 'amazon_business', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
-            ('hotel@demo.com', 'password123', 'hotel_business', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
-            ('course@demo.com', 'password123', 'coursera_business', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-        ]
-        cursor.executemany(
-            "INSERT INTO users (email, password, business_id, created_at) VALUES (?, ?, ?, ?)",
-            demo_users
-        )
-        print("[OK] Demo users created")
-    
-    conn.commit()
-    conn.close()
-    print("[OK] Database initialized")
+    """Initialize PostgreSQL database with required tables"""
+    try:
+        # Create database if it doesn't exist
+        create_database_if_not_exists()
+        
+        # Get connection
+        conn = get_direct_connection()
+        cursor = conn.cursor()
+        
+        # Businesses table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS businesses (
+                id VARCHAR(255) PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                type VARCHAR(100),
+                description TEXT,
+                image_url VARCHAR(500),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
+        # Users table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                email VARCHAR(255) NOT NULL UNIQUE,
+                password VARCHAR(255) NOT NULL,
+                business_id VARCHAR(255) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (business_id) REFERENCES businesses(id)
+            )
+        ''')
+        
+        # Reviews table (one row per review with overall sentiment)
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS reviews (
+                id VARCHAR(255) PRIMARY KEY,
+                business_id VARCHAR(255) NOT NULL,
+                text TEXT NOT NULL,
+                customer_name VARCHAR(255),
+                rating FLOAT,
+                date TIMESTAMP,
+                overall_sentiment VARCHAR(50)
+            )
+        ''')
+        
+        # Aspect sentiments table (many aspects per review)
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS aspect_sentiments (
+                id SERIAL PRIMARY KEY,
+                review_id VARCHAR(255) NOT NULL,
+                aspect_term VARCHAR(255),
+                category VARCHAR(100),
+                sentiment VARCHAR(50),
+                FOREIGN KEY (review_id) REFERENCES reviews(id)
+            )
+        ''')
+        
+        # Raw reviews table (queue for processing)
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS raw_reviews (
+                id SERIAL PRIMARY KEY,
+                business_id VARCHAR(255) NOT NULL,
+                review_text TEXT NOT NULL,
+                customer_name VARCHAR(255),
+                rating FLOAT,
+                date TIMESTAMP,
+                status VARCHAR(50) DEFAULT 'pending',
+                model_type VARCHAR(100),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
+        # Analytics table (cached analytics data)
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS analytics (
+                id SERIAL PRIMARY KEY,
+                business_id VARCHAR(255) NOT NULL,
+                analytics_data JSONB,
+                generated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                period VARCHAR(50) DEFAULT 'weekly'
+            )
+        ''')
+        
+        # Insert demo businesses if not exist
+        cursor.execute("SELECT COUNT(*) FROM businesses")
+        if cursor.fetchone()[0] == 0:
+            demo_businesses = [
+                ('amazon_business', 'Food Restaurant', 'food', 'Local food restaurant with great reviews', ''),
+                ('hotel_business', 'Luxury Hotel', 'hotel', 'Premium hotel with excellent service', ''),
+                ('coursera_business', 'Online Course Platform', 'education', 'Top-rated online education platform', '')
+            ]
+            for biz in demo_businesses:
+                cursor.execute(
+                    "INSERT INTO businesses (id, name, type, description, image_url) VALUES (%s, %s, %s, %s, %s)",
+                    biz
+                )
+            print("[OK] Demo businesses created")
+        
+        # Insert demo users if not exist
+        cursor.execute("SELECT COUNT(*) FROM users")
+        if cursor.fetchone()[0] == 0:
+            demo_users = [
+                ('food@demo.com', 'password123', 'amazon_business'),
+                ('hotel@demo.com', 'password123', 'hotel_business'),
+                ('course@demo.com', 'password123', 'coursera_business')
+            ]
+            for user in demo_users:
+                cursor.execute(
+                    "INSERT INTO users (email, password, business_id) VALUES (%s, %s, %s)",
+                    user
+                )
+            print("[OK] Demo users created")
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        print("[OK] PostgreSQL database initialized")
+        
+    except Exception as e:
+        print(f"[ERROR] Database initialization failed: {e}")
+        import traceback
+        traceback.print_exc()
+        raise
 
 
 # Pydantic models
@@ -294,7 +309,7 @@ async def get_demo_accounts():
 async def get_reviews(business_id: str, sentiment: Optional[str] = None):
     """Get all reviews for a business with optional sentiment filter"""
     try:
-        conn = sqlite3.connect(DB_NAME)
+        conn = get_direct_connection()
         cursor = conn.cursor()
         
         # Join with aspect_sentiments to get categories and sentiments
@@ -302,18 +317,19 @@ async def get_reviews(business_id: str, sentiment: Optional[str] = None):
             SELECT DISTINCT r.id, r.text, a.category, a.sentiment, r.date, r.customer_name, r.rating, r.overall_sentiment
             FROM reviews r
             LEFT JOIN aspect_sentiments a ON r.id = a.review_id
-            WHERE r.business_id = ?
+            WHERE r.business_id = %s
         '''
         params = [business_id]
         
         if sentiment and sentiment != "all":
-            query += " AND a.sentiment = ?"
+            query += " AND a.sentiment = %s"
             params.append(sentiment.lower())
         
         query += " ORDER BY r.date DESC, r.id DESC"
         
         cursor.execute(query, params)
         rows = cursor.fetchall()
+        cursor.close()
         conn.close()
         
         # Group by review text to get all aspects for each review
@@ -349,19 +365,19 @@ async def get_reviews(business_id: str, sentiment: Optional[str] = None):
 @app.get("/api/businesses/{business_id}/stats")
 async def get_business_stats(business_id: str):
     """Get dashboard statistics for a business"""
-    conn = sqlite3.connect(DB_NAME)
+    conn = get_direct_connection()
     cursor = conn.cursor()
     
     # Get unique reviews count (using 'text' column, not 'review_text')
     cursor.execute(
-        "SELECT COUNT(*) FROM reviews WHERE business_id = ?",
+        "SELECT COUNT(*) FROM reviews WHERE business_id = %s",
         (business_id,)
     )
     total_reviews = cursor.fetchone()[0]
     
     # Get sentiment breakdown using overall_sentiment field (using 'text' column)
     cursor.execute(
-        "SELECT overall_sentiment FROM reviews WHERE business_id = ?",
+        "SELECT overall_sentiment FROM reviews WHERE business_id = %s",
         (business_id,)
     )
     rows = cursor.fetchall()
@@ -385,12 +401,13 @@ async def get_business_stats(business_id: str):
         date_str = target_date.strftime("%Y-%m-%d")
         
         cursor.execute(
-            "SELECT COUNT(*) FROM reviews WHERE business_id = ? AND DATE(date) = ? AND overall_sentiment = 'positive'",
+            "SELECT COUNT(*) FROM reviews WHERE business_id = %s AND DATE(date) = %s AND overall_sentiment = 'positive'",
             (business_id, date_str)
         )
         daily_positive = cursor.fetchone()[0]
         trend_data.append(daily_positive)
     
+    cursor.close()
     conn.close()
     
     return {
@@ -406,21 +423,23 @@ async def get_business_stats(business_id: str):
 async def add_review(data: ReviewInput, background_tasks: BackgroundTasks):
     """Add a new review (queued for async processing)"""
     try:
-        conn = sqlite3.connect(DB_NAME)
+        conn = get_direct_connection()
         cursor = conn.cursor()
         
         date_str = datetime.datetime.now().strftime("%Y-%m-%d")
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        timestamp = datetime.datetime.now()
         
         # Add to raw_reviews queue
         cursor.execute('''
             INSERT INTO raw_reviews 
             (business_id, review_text, customer_name, rating, date, status, model_type, created_at)
-            VALUES (?, ?, ?, ?, ?, 'pending', ?, ?)
+            VALUES (%s, %s, %s, %s, %s, 'pending', %s, %s)
+            RETURNING id
         ''', (data.business_id, data.text, data.customer_name, data.rating, date_str, data.model_type, timestamp))
         
-        raw_review_id = cursor.lastrowid
+        raw_review_id = cursor.fetchone()[0]
         conn.commit()
+        cursor.close()
         conn.close()
         
         # Notify connected clients
@@ -456,12 +475,12 @@ async def add_review(data: ReviewInput, background_tasks: BackgroundTasks):
 @app.get("/api/businesses/{business_id}/analytics")
 async def get_analytics(business_id: str):
     """Get AI-generated analytics for a business"""
-    conn = sqlite3.connect(DB_NAME)
+    conn = get_direct_connection()
     cursor = conn.cursor()
     
     # Get all reviews for this business (using correct column names: 'text', not 'review_text')
     cursor.execute(
-        "SELECT id, text, overall_sentiment FROM reviews WHERE business_id = ?",
+        "SELECT id, text, overall_sentiment FROM reviews WHERE business_id = %s",
         (business_id,)
     )
     reviews = cursor.fetchall()
@@ -494,7 +513,7 @@ async def get_analytics(business_id: str):
         SELECT a.category, a.sentiment
         FROM aspect_sentiments a
         JOIN reviews r ON a.review_id = r.id
-        WHERE r.business_id = ?
+        WHERE r.business_id = %s
     ''', (business_id,))
     aspect_rows = cursor.fetchall()
     
@@ -518,22 +537,22 @@ async def get_analytics(business_id: str):
                 SELECT COUNT(DISTINCT r.id)
                 FROM reviews r
                 JOIN aspect_sentiments a ON r.id = a.review_id
-                WHERE r.business_id = ? AND a.category = ? AND a.sentiment = 'negative'
+                WHERE r.business_id = %s AND a.category = %s AND a.sentiment = 'negative'
             ''', (business_id, category))
             unique_review_count = cursor.fetchone()[0]
             
             # Get example reviews for this issue (unique reviews only)
             cursor.execute('''
-                SELECT DISTINCT r.customer_name, r.text 
+                SELECT DISTINCT r.id, r.customer_name, r.text, r.date 
                 FROM reviews r
                 JOIN aspect_sentiments a ON r.id = a.review_id
-                WHERE r.business_id = ? AND a.category = ? AND a.sentiment = 'negative'
-                LIMIT 5
+                WHERE r.business_id = %s AND a.category = %s AND a.sentiment = 'negative'
+                ORDER BY r.date DESC
             ''', (business_id, category))
             example_reviews = cursor.fetchall()
             
             examples = []
-            for (customer_name, review_text) in example_reviews:
+            for (review_id, customer_name, review_text, review_date) in example_reviews:
                 examples.append({
                     "term": category,
                     "review_text": review_text[:100] + "..." if len(review_text) > 100 else review_text
@@ -565,6 +584,7 @@ async def get_analytics(business_id: str):
             "total": total
         })
     
+    cursor.close()
     conn.close()
     
     return {
@@ -594,18 +614,19 @@ async def websocket_endpoint(websocket: WebSocket):
 def process_review(raw_review_id: int):
     """Process a review through ML model (runs in background)"""
     try:
-        conn = sqlite3.connect(DB_NAME)
+        conn = get_direct_connection()
         cursor = conn.cursor()
         
         # Get review from queue
         cursor.execute('''
             SELECT business_id, review_text, customer_name, rating, date, model_type
             FROM raw_reviews 
-            WHERE id = ? AND status = 'pending'
+            WHERE id = %s AND status = 'pending'
         ''', (raw_review_id,))
         
         row = cursor.fetchone()
         if not row:
+            cursor.close()
             conn.close()
             return
         
@@ -637,7 +658,7 @@ def process_review(raw_review_id: int):
         cursor.execute('''
             INSERT INTO reviews 
             (id, business_id, text, customer_name, rating, date, overall_sentiment)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
         ''', (review_id, business_id, review_text, customer_name, rating, date_str, dominant_sentiment))
         
         # Save aspects to aspect_sentiments table
@@ -646,12 +667,13 @@ def process_review(raw_review_id: int):
                 cursor.execute('''
                     INSERT INTO aspect_sentiments 
                     (review_id, aspect_term, category, sentiment)
-                    VALUES (?, ?, ?, ?)
+                    VALUES (%s, %s, %s, %s)
                 ''', (review_id, item.get("term", ""), item.get("category", "general"), item.get("sentiment", "neutral")))
         
         # Mark as completed
-        cursor.execute("UPDATE raw_reviews SET status = 'completed' WHERE id = ?", (raw_review_id,))
+        cursor.execute("UPDATE raw_reviews SET status = 'completed' WHERE id = %s", (raw_review_id,))
         conn.commit()
+        cursor.close()
         conn.close()
         
         print(f"[OK] Review {raw_review_id} processed: {len(analysis_items)} aspects found")
@@ -674,10 +696,11 @@ def process_review(raw_review_id: int):
     except Exception as e:
         print(f"[ERROR] Processing review {raw_review_id}: {str(e)}")
         try:
-            conn = sqlite3.connect(DB_NAME)
+            conn = get_direct_connection()
             cursor = conn.cursor()
-            cursor.execute("UPDATE raw_reviews SET status = 'failed' WHERE id = ?", (raw_review_id,))
+            cursor.execute("UPDATE raw_reviews SET status = 'failed' WHERE id = %s", (raw_review_id,))
             conn.commit()
+            cursor.close()
             conn.close()
         except:
             pass
@@ -687,7 +710,7 @@ def background_review_processor():
     """Background thread to process pending reviews"""
     while True:
         try:
-            conn = sqlite3.connect(DB_NAME)
+            conn = get_direct_connection()
             cursor = conn.cursor()
             
             # Get up to 5 pending reviews
@@ -698,6 +721,7 @@ def background_review_processor():
                 LIMIT 5
             ''')
             pending = cursor.fetchall()
+            cursor.close()
             conn.close()
             
             if pending:

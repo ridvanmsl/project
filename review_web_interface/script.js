@@ -3,7 +3,7 @@
  * Handles review submission and display functionality
  */
 
-const API_URL = 'https://5fac33336699.ngrok-free.app/api';
+const API_URL = 'https://cricket-fun-polecat.ngrok-free.app/api';
 
 let selectedBusiness = 'amazon_business';
 let selectedModel = 'amazon';
@@ -102,7 +102,7 @@ function setLoading(isLoading) {
     const submitBtn = document.getElementById('submitBtn');
     const btnText = submitBtn.querySelector('.btn-text');
     const btnLoading = submitBtn.querySelector('.btn-loading');
-    
+
     submitBtn.disabled = isLoading;
     btnText.style.display = isLoading ? 'none' : 'inline';
     btnLoading.style.display = isLoading ? 'inline' : 'none';
@@ -143,7 +143,7 @@ async function loadRecentReviews() {
 
     try {
         const response = await fetch(`${API_URL}/businesses/${selectedBusiness}/reviews`);
-        
+
         if (!response.ok) {
             throw new Error('Failed to load reviews');
         }

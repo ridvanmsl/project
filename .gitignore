@@ -62,3 +62,6 @@ Thumbs.db
 *.bak
 *.swp
 
+
+# Environment variables (contains passwords)
+.env

@@ -8,7 +8,7 @@ import '../models/business.dart';
 class ApiService {
   // Ngrok URL for accessing backend from anywhere
   // Change back to 'http://10.0.2.2:8000/api' for local emulator
-  static const String baseUrl = 'https://5fac33336699.ngrok-free.app/api';
+  static const String baseUrl = 'https://cricket-fun-polecat.ngrok-free.app/api';
   
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {

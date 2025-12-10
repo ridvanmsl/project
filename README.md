@@ -36,9 +36,10 @@ Each business type uses a specialized fine-tuned T5 model for accurate aspect-ba
 ### 🔧 Backend API (FastAPI)
 - RESTful API endpoints
 - WebSocket support for real-time updates
-- SQLite database with optimized queries
+- PostgreSQL database with connection pooling
 - Background task processing
 - CORS-enabled for cross-origin requests
+- GPU-accelerated ML inference
 
 ## 🏗️ Architecture
 
@@ -55,8 +56,9 @@ Each business type uses a specialized fine-tuned T5 model for accurate aspect-ba
 ├── review_backend/          # FastAPI backend server
 │   ├── main.py             # Main server with API routes
 │   ├── ml_engine.py        # ML model processing engine
+│   ├── db_config.py        # PostgreSQL configuration
 │   ├── requirements.txt    # Python dependencies
-│   ├── add_sample_reviews.py  # Sample data generator
+│   ├── .env                # Database credentials (not in repo)
 │   └── START_BACKEND.bat   # Quick start script
 │
 └── review_web_interface/   # Web dashboard
@@ -73,19 +75,35 @@ included due to size constraints. You need to train or obtain these models separ
 ### Prerequisites
 
 - **Python 3.8+**
+- **PostgreSQL 13+**
 - **Flutter 3.0+** (for mobile app)
 - **CUDA-compatible GPU** (optional, for faster processing)
 - **ngrok** (for exposing local server)
 
 ### Backend Setup
 
-1. **Install Python dependencies:**
+1. **Install PostgreSQL:**
+   - Download from https://www.postgresql.org/download/
+   - Install and note your username/password
+
+2. **Install Python dependencies:**
 ```bash
 cd review_backend
 pip install -r requirements.txt
 ```
 
-2. **Obtain ML Models:**
+3. **Configure Database:**
+
+Create a `.env` file in `review_backend/`:
+```env
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=review_analysis_db
+DB_USER=postgres
+DB_PASSWORD=your_password
+```
+
+4. **Obtain ML Models:**
 
 Place the following models in the project root:
 - `amazon_model/` - Fine-tuned T5 for food/product reviews
@@ -98,7 +116,7 @@ Each model folder should contain:
 - `model.safetensors`
 - `tokenizer files`
 
-3. **Start the backend:**
+5. **Start the backend:**
 ```bash
 python main.py
 ```
@@ -110,7 +128,9 @@ START_BACKEND.bat
 
 The server will start on `http://localhost:8000`
 
-4. **Setup ngrok (for mobile access):**
+**Database will auto-initialize** on first run!
+
+6. **Setup ngrok (for mobile access):**
 ```bash
 ngrok http 8000
 ```
@@ -158,31 +178,47 @@ const API_URL = 'https://YOUR_NGROK_URL.ngrok-free.app/api';
 # Simply open index.html in your browser
 ```
 
-## 📊 Database Schema
+## 📊 Database Schema (PostgreSQL)
 
 ### businesses
 - Business profiles (Food, Course, Hotel)
+- `id VARCHAR(255) PRIMARY KEY`
 - Includes name, type, description, image URL
+- `created_at TIMESTAMP`
 
 ### users  
 - Demo account credentials
+- `id SERIAL PRIMARY KEY`
+- `email VARCHAR(255) UNIQUE`
 - Linked to specific businesses
 
 ### reviews
 - Customer reviews with overall sentiment
+- `id VARCHAR(255) PRIMARY KEY` (UUID)
 - Includes text, rating, date, customer name
+- `overall_sentiment VARCHAR(50)` (positive/negative/neutral)
+- `date TIMESTAMP`
 
 ### aspect_sentiments
 - Detailed aspect-level sentiment analysis
+- `id SERIAL PRIMARY KEY`
 - Multiple aspects per review
+- `review_id VARCHAR(255)` references reviews(id)
+- `aspect_term`, `category`, `sentiment`
 
 ### raw_reviews
 - Processing queue for incoming reviews
-- Tracks processing status
+- `id SERIAL PRIMARY KEY`
+- Tracks processing status (pending/completed/failed)
+- `created_at TIMESTAMP`
+- `model_type VARCHAR(100)`
 
 ### analytics
 - Cached analytics data
+- `id SERIAL PRIMARY KEY`
+- `analytics_data JSONB` (JSON support)
 - Aggregated insights and statistics
+- `generated_at TIMESTAMP`
 
 ## 🔑 Demo Accounts
 
@@ -252,8 +288,10 @@ The system identifies specific aspects within reviews:
 - **FastAPI** - Modern Python web framework
 - **PyTorch** - Deep learning framework
 - **Transformers** - Hugging Face model library
-- **SQLite** - Lightweight database
+- **PostgreSQL** - Production-grade relational database
+- **psycopg2** - PostgreSQL adapter for Python
 - **Uvicorn** - ASGI server
+- **WebSockets** - Real-time communication
 
 ### Mobile
 - **Flutter** - Cross-platform framework
