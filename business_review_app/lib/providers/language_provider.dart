@@ -33,10 +33,8 @@ class LanguageProvider extends ChangeNotifier {
     return _translations[_currentLanguage]?[key] ?? key;
   }
   
-  // This is a simplified version. In production, use proper i18n package
   static const Map<String, Map<String, String>> _translations = {
     'en': {},
-    'tr': {},
   };
 }
 

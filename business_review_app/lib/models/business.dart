@@ -2,7 +2,7 @@
 class Business {
   final String id;
   final String name;
-  final String type; // 'amazon', 'coursera', 'hotel'
+  final String type;
   final String? description;
   final String? imageUrl;
   

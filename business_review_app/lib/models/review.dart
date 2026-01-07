@@ -32,7 +32,6 @@ class Review {
           (sentimentCounts[aspect.sentiment] ?? 0) + 1;
     }
     
-    // Return the most common sentiment
     return sentimentCounts.entries
         .reduce((a, b) => a.value > b.value ? a : b)
         .key;
@@ -55,7 +54,7 @@ class Review {
       date: DateTime.parse(json['date'] as String),
       aspects: (json['aspects'] as List?)
           ?.map((aspect) => AspectSentiment(
-                aspectTerm: aspect['category'] ?? 'general', // Use category as term if aspect_term not available
+                aspectTerm: aspect['category'] ?? 'general',
                 category: aspect['category'] ?? 'general',
                 sentiment: aspect['sentiment'] ?? 'neutral',
               ))
@@ -83,7 +82,7 @@ class Review {
 class AspectSentiment {
   final String aspectTerm;
   final String category;
-  final String sentiment; // 'positive', 'negative', 'neutral'
+  final String sentiment;
   
   AspectSentiment({
     required this.aspectTerm,

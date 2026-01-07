@@ -177,7 +177,6 @@ class DatabaseService {
   Future<void> insertAnalytics(Analytics analytics) async {
     final db = await database;
     
-    // Delete old analytics for this business and period
     await db.delete(
       'analytics',
       where: 'business_id = ? AND period = ?',

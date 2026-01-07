@@ -29,7 +29,6 @@ class Analytics {
   });
 
   factory Analytics.fromMap(Map<String, dynamic> map) {
-    // Helper function to parse JSON data (handles both String and List)
     List<dynamic> parseJsonList(dynamic data) {
       if (data is String) {
         return jsonDecode(data) as List;
@@ -39,7 +38,6 @@ class Analytics {
       return [];
     }
 
-    // Handle simplified API response format
     return Analytics(
       id: map['id'] as int?,
       businessId: map['business_id'] ?? map['businessId'] ?? 'unknown',
@@ -211,7 +209,6 @@ class CategoryBreakdown {
   });
 
   factory CategoryBreakdown.fromJson(Map<String, dynamic> json) {
-    // Handle both snake_case and camelCase
     final name = json['name'] ?? json['category'] ?? 'Unknown';
     final positive = json['positive'] ?? 0;
     final negative = json['negative'] ?? 0;

@@ -6,8 +6,6 @@ import '../models/analytics.dart';
 import '../models/business.dart';
 
 class ApiService {
-  // Ngrok URL for accessing backend from anywhere
-  // Change back to 'http://10.0.2.2:8000/api' for local emulator
   static const String baseUrl = 'https://cricket-fun-polecat.ngrok-free.app/api';
   
   Future<Map<String, dynamic>> login(String email, String password) async {
@@ -80,11 +78,22 @@ class ApiService {
     }
   }
 
-  Future<List<Review>> fetchReviews(String businessId) async {
+  Future<List<Review>> fetchReviews(String businessId, {String? sentiment, String? category}) async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/businesses/$businessId/reviews'),
-      );
+      var queryParams = <String>[];
+      if (sentiment != null && sentiment.isNotEmpty) {
+        queryParams.add('sentiment=$sentiment');
+      }
+      if (category != null && category.isNotEmpty) {
+        queryParams.add('category=$category');
+      }
+      
+      var url = '$baseUrl/businesses/$businessId/reviews';
+      if (queryParams.isNotEmpty) {
+        url += '?${queryParams.join('&')}';
+      }
+      
+      final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
@@ -123,7 +132,7 @@ class ApiService {
   Future<bool> checkServerStatus() async {
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:8000/'),
+        Uri.parse('$baseUrl/demo-accounts')
       ).timeout(const Duration(seconds: 5));
       
       return response.statusCode == 200;
