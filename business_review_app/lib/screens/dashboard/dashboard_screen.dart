@@ -6,6 +6,7 @@ import '../../providers/language_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/api_service.dart';
 import '../../models/review.dart';
+import '../reviews/reviews_screen.dart';
 import 'widgets/stat_card.dart';
 import 'widgets/sentiment_chart.dart';
 import 'widgets/recent_review_card.dart';
@@ -74,7 +75,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             onPressed: _isLoading ? null : _loadData,
             tooltip: 'Refresh',
           ),
-          // Business name badge
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -105,7 +105,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          // Simulate refresh
           await Future.delayed(const Duration(seconds: 1));
         },
         child: SingleChildScrollView(
@@ -113,7 +112,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Welcome Message
               Text(
                 '${AppLocalization.translate('welcome', languageCode)}, $businessName!',
                 style: Theme.of(context).textTheme.displayMedium,
@@ -125,7 +123,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Statistics Cards
               Row(
                 children: [
                   Expanded(
@@ -175,7 +172,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               const SizedBox(height: 32),
 
-              // Sentiment Distribution Chart
               Text(
                 AppLocalization.translate(
                     'sentiment_distribution', languageCode),
@@ -185,7 +181,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               SentimentChart(sentimentStats: sentimentStats),
               const SizedBox(height: 32),
 
-              // Recent Reviews
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -195,7 +190,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                   TextButton(
                     onPressed: () {
-                      // Navigate to reviews screen handled by bottom nav
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ReviewsScreen(),
+                        ),
+                      );
                     },
                     child: Text(
                       AppLocalization.translate('view_all', languageCode),

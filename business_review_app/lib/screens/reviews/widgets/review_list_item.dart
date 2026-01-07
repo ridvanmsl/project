@@ -62,10 +62,8 @@ class ReviewListItem extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
               Row(
                 children: [
-                  // Avatar
                   CircleAvatar(
                     backgroundColor: _getSentimentColor(sentiment).withOpacity(0.1),
                     child: Icon(
@@ -76,7 +74,6 @@ class ReviewListItem extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
 
-                  // Customer Name & Date
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -93,7 +90,6 @@ class ReviewListItem extends StatelessWidget {
                     ),
                   ),
 
-                  // Rating
                   if (review.rating != null)
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -127,7 +123,6 @@ class ReviewListItem extends StatelessWidget {
               ),
               const SizedBox(height: 12),
 
-              // Review Text
               Text(
                 review.text,
                 style: Theme.of(context).textTheme.bodyLarge,
@@ -136,7 +131,6 @@ class ReviewListItem extends StatelessWidget {
               ),
               const SizedBox(height: 12),
 
-              // Aspects Count
               Row(
                 children: [
                   Icon(

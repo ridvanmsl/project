@@ -62,10 +62,8 @@ class RecentReviewCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
               Row(
                 children: [
-                  // Sentiment Icon
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
@@ -80,7 +78,6 @@ class RecentReviewCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
 
-                  // Customer Name & Date
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -97,7 +94,6 @@ class RecentReviewCard extends StatelessWidget {
                     ),
                   ),
 
-                  // Rating
                   if (review.rating != null)
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -131,7 +127,6 @@ class RecentReviewCard extends StatelessWidget {
               ),
               const SizedBox(height: 12),
 
-              // Review Text
               Text(
                 review.text,
                 style: Theme.of(context).textTheme.bodyLarge,
@@ -140,7 +135,6 @@ class RecentReviewCard extends StatelessWidget {
               ),
               const SizedBox(height: 12),
 
-              // Aspects
               Wrap(
                 spacing: 8,
                 runSpacing: 8,

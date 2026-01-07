@@ -5,7 +5,6 @@ import '../../core/localization/app_localization.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/language_provider.dart';
 import '../../services/api_service.dart';
-import 'widgets/language_selector.dart';
 
 /// Login screen with email/password authentication
 class LoginScreen extends StatefulWidget {
@@ -39,11 +38,10 @@ class _LoginScreenState extends State<LoginScreen> {
         });
       }
       
-      // If no accounts loaded, show error message
       if (accounts.isEmpty && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Cannot connect to server. Make sure backend is running at http://localhost:8000'),
+            content: Text('Cannot connect to server. Please check if backend is running.'),
             duration: Duration(seconds: 5),
             backgroundColor: Colors.orange,
           ),
@@ -120,17 +118,6 @@ class _LoginScreenState extends State<LoginScreen> {
             height: size.height - MediaQuery.of(context).padding.top,
             child: Column(
               children: [
-                // Language Selector
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: const [
-                      LanguageSelector(),
-                    ],
-                  ),
-                ),
-
                 Expanded(
                   child: Center(
                     child: SingleChildScrollView(
@@ -141,7 +128,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            // Logo/Icon
                             Container(
                               width: 80,
                               height: 80,
@@ -157,7 +143,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             const SizedBox(height: 32),
 
-                            // Title
                             Text(
                               AppLocalization.translate('login_title', languageCode),
                               style: Theme.of(context).textTheme.displayMedium,
@@ -165,7 +150,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             const SizedBox(height: 8),
 
-                            // Subtitle
                             Text(
                               AppLocalization.translate('login_subtitle', languageCode),
                               style: Theme.of(context).textTheme.bodyMedium,
@@ -173,7 +157,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             const SizedBox(height: 48),
 
-                            // Email Field
                             TextFormField(
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
@@ -191,7 +174,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             const SizedBox(height: 16),
 
-                            // Password Field
                             TextFormField(
                               controller: _passwordController,
                               obscureText: _obscurePassword,
@@ -221,7 +203,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             const SizedBox(height: 24),
 
-                            // Login Button
                             SizedBox(
                               height: 56,
                               child: ElevatedButton(
@@ -244,7 +225,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             const SizedBox(height: 16),
 
-                            // Demo Accounts
                             Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
@@ -333,7 +313,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                       Color color;
                                       String label;
                                       
-                                      // Use businessType from API (amazon, coursera, hotel)
                                       final businessType = account['businessType'] ?? '';
                                       
                                       if (businessType == 'amazon') {

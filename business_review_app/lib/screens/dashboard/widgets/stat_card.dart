@@ -23,7 +23,6 @@ class StatCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Icon
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -38,7 +37,6 @@ class StatCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // Value
             Text(
               value,
               style: Theme.of(context).textTheme.displayMedium?.copyWith(
@@ -48,7 +46,6 @@ class StatCard extends StatelessWidget {
             ),
             const SizedBox(height: 4),
 
-            // Title
             Text(
               title,
               style: Theme.of(context).textTheme.bodyMedium,

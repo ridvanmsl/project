@@ -24,7 +24,6 @@ class SettingsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Account Section
             Text(
               AppLocalization.translate('account', languageCode),
               style: Theme.of(context).textTheme.displaySmall,
@@ -72,35 +71,6 @@ class SettingsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 32),
 
-            // Language Section
-            Text(
-              AppLocalization.translate('language', languageCode),
-              style: Theme.of(context).textTheme.displaySmall,
-            ),
-            const SizedBox(height: 12),
-            Card(
-              child: Column(
-                children: [
-                  const _LanguageOption(
-                    languageCode: 'en',
-                    languageName: 'English',
-                    icon: '🇬🇧',
-                  ),
-                  Divider(
-                    height: 1,
-                    color: AppColors.textSecondary.withOpacity(0.1),
-                  ),
-                  const _LanguageOption(
-                    languageCode: 'tr',
-                    languageName: 'Türkçe',
-                    icon: '🇹🇷',
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-
-            // App Info Section
             Text(
               AppLocalization.translate('app_info', languageCode),
               style: Theme.of(context).textTheme.displaySmall,
@@ -130,7 +100,6 @@ class SettingsScreen extends StatelessWidget {
                     trailing:
                         const Icon(Icons.arrow_forward_ios_rounded, size: 16),
                     onTap: () {
-                      // Navigate to privacy policy
                     },
                   ),
                   Divider(
@@ -146,7 +115,6 @@ class SettingsScreen extends StatelessWidget {
                     trailing:
                         const Icon(Icons.arrow_forward_ios_rounded, size: 16),
                     onTap: () {
-                      // Navigate to terms of service
                     },
                   ),
                 ],
@@ -154,7 +122,6 @@ class SettingsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 32),
 
-            // Logout Button
             SizedBox(
               width: double.infinity,
               height: 56,
@@ -208,46 +175,6 @@ class SettingsScreen extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _LanguageOption extends StatelessWidget {
-  final String languageCode;
-  final String languageName;
-  final String icon;
-
-  const _LanguageOption({
-    required this.languageCode,
-    required this.languageName,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final currentLanguage = context.watch<LanguageProvider>().currentLanguage;
-    final isSelected = currentLanguage == languageCode;
-
-    return ListTile(
-      onTap: () {
-        context.read<LanguageProvider>().changeLanguage(languageCode);
-      },
-      leading: Text(
-        icon,
-        style: const TextStyle(fontSize: 24),
-      ),
-      title: Text(
-        languageName,
-        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            ),
-      ),
-      trailing: isSelected
-          ? Icon(
-              Icons.check_circle_rounded,
-              color: AppColors.primary,
-            )
-          : null,
     );
   }
 }

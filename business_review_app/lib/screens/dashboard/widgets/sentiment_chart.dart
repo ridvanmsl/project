@@ -24,7 +24,6 @@ class SentimentChart extends StatelessWidget {
         padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
-            // Chart
             SizedBox(
               height: 200,
               child: PieChart(
@@ -71,7 +70,6 @@ class SentimentChart extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // Legend
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [

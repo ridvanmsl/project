@@ -283,6 +283,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       return const SizedBox.shrink();
     }
 
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -291,7 +293,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
-        TopIssuesList(issues: analytics.topIssues),
+        TopIssuesList(
+          issues: analytics.topIssues,
+          businessId: authProvider.businessId ?? 'amazon_business',
+        ),
       ],
     );
   }

@@ -19,7 +19,7 @@ class ReviewsScreen extends StatefulWidget {
 }
 
 class _ReviewsScreenState extends State<ReviewsScreen> {
-  String _selectedFilter = 'all'; // 'all', 'positive', 'negative', 'neutral'
+  String _selectedFilter = 'all';
   String _searchQuery = '';
   List<Review> _allReviews = [];
   bool _isLoading = true;
@@ -37,13 +37,11 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final businessId = authProvider.businessId ?? 'amazon_business';
 
-      // Clear old cache first
       await DatabaseService().clearAllReviews();
 
       final apiService = ApiService();
       final reviews = await apiService.fetchReviews(businessId);
 
-      // Save new data to cache
       for (var review in reviews) {
         await DatabaseService().insertReview(review, businessId);
       }
@@ -57,7 +55,6 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final businessId = authProvider.businessId ?? 'amazon_business';
 
-      // Use cached data as fallback
       final localReviews = await DatabaseService().getReviewsForBusiness(businessId);
 
       setState(() {
@@ -70,14 +67,12 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
   List<Review> get _filteredReviews {
     var reviews = _allReviews;
 
-    // Apply sentiment filter
     if (_selectedFilter != 'all') {
       reviews = reviews.where((review) {
         return review.overallSentiment == _selectedFilter;
       }).toList();
     }
 
-    // Apply search filter
     if (_searchQuery.isNotEmpty) {
       reviews = reviews.where((review) {
         return review.text.toLowerCase().contains(_searchQuery.toLowerCase()) ||
@@ -115,7 +110,6 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
           ? const Center(child: CircularProgressIndicator())
           : Column(
         children: [
-          // Search Bar
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
@@ -133,7 +127,6 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
             ),
           ),
 
-          // Filter Chips
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -174,7 +167,6 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
           ),
           const SizedBox(height: 16),
 
-          // Reviews List
           Expanded(
             child: RefreshIndicator(
               onRefresh: _loadReviews,

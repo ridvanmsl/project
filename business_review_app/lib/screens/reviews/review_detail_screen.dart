@@ -55,7 +55,6 @@ class ReviewDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header Card
             Card(
               margin: const EdgeInsets.all(16),
               child: Padding(
@@ -63,7 +62,6 @@ class ReviewDetailScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Customer Info
                     Row(
                       children: [
                         CircleAvatar(
@@ -96,7 +94,6 @@ class ReviewDetailScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
 
-                    // Rating
                     if (review.rating != null)
                       Container(
                         padding: const EdgeInsets.symmetric(
@@ -140,7 +137,6 @@ class ReviewDetailScreen extends StatelessWidget {
               ),
             ),
 
-            // Overall Sentiment
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Card(
@@ -188,7 +184,6 @@ class ReviewDetailScreen extends StatelessWidget {
               ),
             ),
 
-            // Review Text
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -212,7 +207,6 @@ class ReviewDetailScreen extends StatelessWidget {
               ),
             ),
 
-            // Sentiment Analysis
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -236,7 +230,6 @@ class ReviewDetailScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Aspect Term
                             Row(
                               children: [
                                 Container(
@@ -256,7 +249,6 @@ class ReviewDetailScreen extends StatelessWidget {
                                     style: Theme.of(context).textTheme.labelLarge,
                                   ),
                                 ),
-                                // Sentiment Badge
                                 Container(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 12,
@@ -297,7 +289,6 @@ class ReviewDetailScreen extends StatelessWidget {
                               ],
                             ),
                             const SizedBox(height: 12),
-                            // Category
                             Row(
                               children: [
                                 Icon(

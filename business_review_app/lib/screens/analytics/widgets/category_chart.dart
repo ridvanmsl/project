@@ -62,7 +62,6 @@ class CategoryChart extends StatelessWidget {
                           borderRadius: BorderRadius.circular(4),
                           child: Row(
                             children: [
-                              // Positive bar (green)
                               if (cat.positivePct > 0)
                                 Container(
                                   width: positiveWidth,
@@ -76,7 +75,6 @@ class CategoryChart extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                              // Negative bar (red)
                               if (cat.negativePct > 0)
                                 Container(
                                   width: negativeWidth,
@@ -90,7 +88,6 @@ class CategoryChart extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                              // Neutral bar (gray)
                               if (cat.neutralPct > 0)
                                 Container(
                                   width: neutralWidth,
