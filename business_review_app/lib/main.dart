@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
 import 'providers/language_provider.dart';
 import 'providers/auth_provider.dart';
+import 'providers/websocket_provider.dart';
 import 'screens/login/login_screen.dart';
 import 'screens/main/main_screen.dart';
 
@@ -21,6 +22,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => LanguageProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => WebSocketProvider()),
       ],
       child: Consumer<LanguageProvider>(
         builder: (context, languageProvider, child) {
@@ -31,7 +33,6 @@ class MyApp extends StatelessWidget {
             locale: Locale(languageProvider.currentLanguage),
             supportedLocales: const [
               Locale('en'),
-              Locale('tr'),
             ],
             localizationsDelegates: const [
               GlobalMaterialLocalizations.delegate,

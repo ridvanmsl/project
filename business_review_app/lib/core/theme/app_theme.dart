@@ -5,7 +5,6 @@ import 'app_colors.dart';
 /// Application theme configuration
 class AppTheme {
   static ThemeData get lightTheme {
-    // Fallback text theme with system fonts
     final fallbackTextTheme = const TextTheme(
       displayLarge: TextStyle(
         fontSize: 32,
@@ -48,7 +47,6 @@ class AppTheme {
       ),
       scaffoldBackgroundColor: AppColors.background,
 
-      // Text Theme with fallback
       textTheme: GoogleFonts.interTextTheme(fallbackTextTheme).copyWith(
         displayLarge: GoogleFonts.inter(
           fontSize: 32,
@@ -87,7 +85,6 @@ class AppTheme {
         ),
       ),
 
-      // AppBar Theme
       appBarTheme: AppBarTheme(
         elevation: 0,
         backgroundColor: AppColors.surface,
@@ -99,7 +96,6 @@ class AppTheme {
         ),
       ),
 
-      // Card Theme
       cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -108,7 +104,6 @@ class AppTheme {
         color: AppColors.surface,
       ),
 
-      // Elevated Button Theme
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
@@ -125,7 +120,6 @@ class AppTheme {
         ),
       ),
 
-      // Input Decoration Theme
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.surface,
