@@ -11,22 +11,22 @@ class UniversalSentimentAnalyzer:
     """High-performance sentiment analyzer with GPU support and optimized generation"""
     
     def __init__(self, model_folder_name):
-        # Determine model path
+
         base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         model_path = os.path.join(base_path, model_folder_name)
         
-        # Use GPU if available for 10-20x speedup
+
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         print(f"Loading: {model_folder_name} on {self.device}...")
         
         try:
             self.tokenizer = AutoTokenizer.from_pretrained(model_path)
             self.model = AutoModelForSeq2SeqLM.from_pretrained(model_path).to(self.device)
-            self.model.eval()  # Set to evaluation mode for faster inference
-            print(f"[OK] Model Ready: {model_folder_name}")
+            self.model.eval()
+            print(f"INFO: Model Ready: {model_folder_name}")
         except Exception as e:
-            print(f"[ERROR] {model_folder_name} could not be loaded. Path: {model_path}")
-            print(f"[ERROR] {e}")
+            print(f"ERROR: {model_folder_name} could not be loaded. Path: {model_path}")
+            print(f"ERROR: {e}")
             self.model = None
 
     def analyze(self, review_text):
@@ -34,41 +34,41 @@ class UniversalSentimentAnalyzer:
         if not self.model:
             return {"original_review": review_text, "analysis": []}
 
-        # Use "absa:" prefix - model was likely trained with this
+
         input_text = "absa: " + review_text
         inputs = self.tokenizer(input_text, return_tensors="pt").input_ids.to(self.device)
         
-        # Optimized generation config for better results and speed
+
         generation_config = GenerationConfig(
-            max_length=128,           # Shorter = faster
-            num_beams=5,              # More beams = better quality
-            early_stopping=True,      # Stop when done
-            repetition_penalty=2.5,   # Prevent repetitive outputs
-            length_penalty=1.0,       # Balanced length
+            max_length=128,
+            num_beams=5,
+            early_stopping=True,
+            repetition_penalty=2.5,
+            length_penalty=1.0,
             eos_token_id=self.tokenizer.eos_token_id,
             pad_token_id=self.tokenizer.pad_token_id,
         )
 
-        with torch.no_grad():  # Disable gradient computation for inference
+        with torch.no_grad():
             outputs = self.model.generate(inputs, generation_config=generation_config)
         
         prediction = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
         
-        # Parse output format: "category:sentiment, category:sentiment"
-        results = []
-        seen = set()  # Deduplicate results
 
-        # Handle both comma and semicolon separators
+        results = []
+        seen = set()
+
+
         parts = prediction.replace(";", ",").split(",") 
 
         for piece in parts:
             if ":" in piece:
                 try:
-                    cat, sent = piece.split(":", 1)  # Split only on first ':'
+                    cat, sent = piece.split(":", 1)
                     cat = cat.strip()
                     sent = sent.strip().lower()
                     
-                    # Normalize sentiment
+
                     if 'pos' in sent:
                         sent = 'positive'
                     elif 'neg' in sent:
@@ -76,7 +76,7 @@ class UniversalSentimentAnalyzer:
                     elif 'neu' in sent:
                         sent = 'neutral'
                     
-                    # Deduplicate
+
                     unique_key = f"{cat}-{sent}"
                     if unique_key not in seen and sent in ['positive', 'negative', 'neutral']:
                         results.append({"category": cat, "sentiment": sent})
@@ -103,12 +103,12 @@ def load_all_models():
         "coursera": UniversalSentimentAnalyzer("coursera_model")
     }
     
-    # Check which models loaded successfully
+
     loaded = [name for name, engine in ENGINES.items() if engine.model is not None]
     failed = [name for name, engine in ENGINES.items() if engine.model is None]
     
     print("="*60)
-    print(f"[OK] Successfully loaded: {', '.join(loaded) if loaded else 'None'}")
+    print(f"INFO: Successfully loaded: {', '.join(loaded) if loaded else 'None'}")
     if failed:
         print(f"[FAILED] Could not load: {', '.join(failed)}")
     print("="*60)

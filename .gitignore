@@ -62,6 +62,10 @@ Thumbs.db
 *.bak
 *.swp
 
-
 # Environment variables (contains passwords)
 .env
+
+# Project specific documentation (excluded for now)
+DATABASE_ARCHITECTURE.md
+DEFENSE_PREPARATION.md
+SYSTEM_ARCHITECTURE.md
